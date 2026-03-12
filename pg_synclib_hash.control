@@ -1,0 +1,4 @@
+comment = 'Cross-platform row hash computation for Merkle tree sync verification'
+default_version = '1.0'
+module_pathname = '$libdir/pg_synclib_hash'
+relocatable = true

@@ -1,0 +1,7 @@
+# Compiled object files
+*.o
+*.dylib
+*.so
+*.dll
+
+.DS_Store

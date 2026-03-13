@@ -430,7 +430,10 @@ synclib_compute_row_hash_trigger(PG_FUNCTION_ARGS)
     json[pos++] = '}';
     json[pos] = '\0';
 
-    /* Use synclib to sort keys and compute hash — single source of truth */
+    /* Use synclib to sort keys and compute hash — single source of truth.
+     * Only skip row_hash (circular dependency). Document/JSONB columns are
+     * included because synclib_build_sorted_json_from_json recursively sorts
+     * JSON keys, ensuring cross-platform consistency regardless of key order. */
     const char *skip_keys[] = {"row_hash"};
     char *sorted_json = synclib_build_sorted_json_from_json(json, skip_keys, 1);
     char *hash_hex = NULL;

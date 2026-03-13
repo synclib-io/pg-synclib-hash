@@ -319,18 +319,24 @@ synclib_compute_row_hash_trigger(PG_FUNCTION_ARGS)
         }
         else if (is_array_type(typoid))
         {
-            /* Convert array to JSON array for cross-platform consistency.
-             * Postgres text[] "{a,b}" -> JSON ["a","b"] */
+            /* Convert array to JSON string to match SQLite representation.
+             * SQLite stores arrays as TEXT, so the client sees them as strings.
+             * Postgres text[] "{a,b}" -> array_to_json -> ["a","b"] -> escaped string "\"[\\\"a\\\",\\\"b\\\"]\""
+             * This ensures precomputed row_hash matches client-computed hash. */
             Datum   json_datum = DirectFunctionCall1(array_to_json, val);
             char   *arr_text = TextDatumGetCString(json_datum);
             size_t  alen = strlen(arr_text);
 
-            json = ensure_capacity(json, &json_capacity, pos, alen + 10);
+            /* Encode as a JSON string (escaped), not a raw JSON array */
+            size_t  esc_capacity = alen * 6 + 3;
+            json = ensure_capacity(json, &json_capacity, pos, esc_capacity);
             if (!json)
                 return PointerGetDatum(rettuple);
 
-            memcpy(json + pos, arr_text, alen);
-            pos += alen;
+            int wrote = json_escape_into(json + pos, json_capacity - pos, arr_text);
+            if (wrote < 0)
+                return PointerGetDatum(rettuple);
+            pos += wrote;
         }
         else if (typoid == TEXTOID || typoid == VARCHAROID || typoid == BPCHAROID)
         {

@@ -1,6 +1,8 @@
 # pg_synclib_hash
 
-Postgres C extension that computes row hashes at write time via a BEFORE trigger. Uses the same `synclib_hash` C library as iOS/Android/Web clients, guaranteeing cross-platform hash consistency for Merkle tree sync verification.
+Postgres C extension that computes row hashes at write time via a BEFORE trigger. This is the **single source of truth** for `row_hash` — clients store the server-computed value and use it for Merkle tree comparison without computing hashes locally.
+
+Uses the same `synclib_hash` C library as all other platforms, guaranteeing cross-platform hash consistency.
 
 ## How it works
 

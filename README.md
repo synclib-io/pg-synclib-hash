@@ -2,6 +2,8 @@
 
 Postgres C extension that computes row hashes at write time via a BEFORE trigger. This is the **single source of truth** for `row_hash` — clients store the server-computed value and use it for Merkle tree comparison without computing hashes locally.
 
+This implements the **sameness** approach to Merkle verification: client and server compare hashes to detect drift, not to verify correctness. For applications that also need correctness guarantees, clients can use `synclib_hash` directly to compute and verify hashes from their local data.
+
 Uses the same `synclib_hash` C library as all other platforms, guaranteeing cross-platform hash consistency.
 
 ## How it works
